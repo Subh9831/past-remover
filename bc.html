@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Count Cleaner</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Hide elements by default */
+        #step2, #step3, #message0 {
+            display: none;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* NEW STYLES for sentence options */
+        #sentence-options {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sentence-option {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 15px 20px; /* More padding for sentences */
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #34495e;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            text-align: left; /* Align text to the left */
+            font-weight: 500;
+        }
+
+        .sentence-option:hover {
+            background-color: #e8f6fd;
+            border-color: #3498db;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        #congrats-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2ecc71;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        /* This canvas is for the confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            pointer-events: none; /* Allows clicking through it */
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="container">
+
+        <div id="step1">
+            <h1>Welcome to Body Count Cleaner!</h1>
+            <p>What is your body count?</p>
+            <input type="number" id="numberInput" min="0" value="0">
+            <br>
+            <button onclick="checkNumber()">Submit</button>
+        </div>
+
+        <div id="step2">
+            <h1>Let's Clear Your Past!</h1>
+            <p>Your body count is <span id="worryCount"></span>. Let's clean it.</p>
+            <p style="font-weight: bold; color: #333; margin-top: 2rem;">CHOOSE A INSTAGRAM BIO:</p>
+            
+            <div id="sentence-options">
+                <div class="sentence-option" onclick="showCongrats()">1. कृष्णं सदा सहायते</div>
+                <div class="sentence-option" onclick="showCongrats()">2. Iskcon baddie</div>
+                <div class="sentence-option" onclick="showCongrats()">3. Alhamdulillah</div>
+                <div class="sentence-option" onclick="showCongrats()">4. Hijabi girl</div>
+                <div class="sentence-option" onclick="showCongrats()">5. God’s fav child</div>
+                <div class="sentence-option" onclick="showCongrats()">6. Waheguru</div>
+                <div class="sentence-option" onclick="showCongrats()">7. 11:11</div>
+            </div>
+        </div>
+
+        <div id="step3">
+            <h2 id="congrats-message">CONGRATULATIONS!<br>YOUR BODY COUNT IS 0 (ZERO) NOW!</h2>
+        </div>
+
+        <div id="message0">
+            <h1>Wow, 0 body count!</h1>
+            <p>That's amazing! You deserve princess treatment. Keep shining!</p>
+            <p style="font-size: 3rem;">😊✨☀️</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Get all the elements we need to change
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const message0 = document.getElementById('message0');
+        
+        const numberInput = document.getElementById('numberInput');
+        const worryCount = document.getElementById('worryCount');
+        const congratsMessage = document.getElementById('congrats-message');
+        
+        // This function will be triggered by the button
+        function checkNumber() {
+            const count = parseInt(numberInput.value);
+            
+            // Hide step 1
+            step1.style.display = 'none';
+
+            if (count === 0 || isNaN(count)) { // Also check for 0 if input is empty or invalid
+                // If number is 0, show the "cute message"
+                message0.style.display = 'block';
+            } else {
+                // If number > 0, show step 2
+                worryCount.textContent = count;
+                step2.style.display = 'block';
+            }
+        }
+
+        // This function is triggered by clicking a sentence option
+        function showCongrats() {
+            // Hide step 2
+            step2.style.display = 'none';
+            
+            // Show the congratulations message (step 3)
+            step3.style.display = 'block';
+
+            // --- Celebration Effect ---
+            
+            // 1. Animate the text
+            congratsMessage.style.transform = 'scale(1)';
+
+            // 2. Run the confetti!
+            // Get the confetti function from the library we imported
+            const myConfetti = confetti.create(document.getElementById('confetti-canvas'), {
+                resize: true,
+                useWorker: true
+            });
+
+            // Fire a burst of confetti
+            myConfetti({
+                particleCount: 150,
+                spread: 180,
+                origin: { y: 0.6 }
+            });
+        }
+    </script>
+
+</body>
+</html>
